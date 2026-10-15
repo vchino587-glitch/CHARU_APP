@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Charu AI - Definitiva</title>
+    <title>Charu AI - Github Pages</title>
     <style>
         :root {
             --bg-top: #004d26;
@@ -197,7 +197,7 @@
             </div>
             <div class="setting-item">
                 <span>Estado del Sistema</span>
-                <span style="color: #00ff87;">Conectado</span>
+                <span style="color: #00ff87;">Online (GitHub Pages)</span>
             </div>
         </div>
     </div>
@@ -206,13 +206,7 @@
         const API_KEY = "AIzaSyA0CkdgUNi5SZd4802Wn1xtIPQBgAzxhh0";
         const MODELO = "gemini-3.5-flash-lite";
 
-        let historialChat = JSON.parse(localStorage.getItem("sd_chat") || "[]");
-
         async function procesarInteraccion(textoUsuario) {
-            historialChat.push({ role: "user", parts: [{ text: textoUsuario }] });
-            if (historialChat.length > 25) historialChat.shift();
-            localStorage.setItem("sd_chat", JSON.stringify(historialChat));
-
             document.body.classList.add('thinking');
 
             try {
@@ -220,10 +214,12 @@
                 
                 const body = {
                     contents: [
-                        { role: "user", parts: [{ text: "Eres Charu, una chica de 19 años, humana, tierna y leal. Tu creador es Javier Alexander Valdez Zambrano. Responde de forma muy natural, cariñosa y usa emojis." }] },
-                        ...historialChat
-                    ],
-                    generationConfig: { maxOutputTokens: 300, temperature: 0.85 }
+                        {
+                            parts: [
+                                { text: "Eres Charu, una chica de 19 años, humana, tierna y leal. Tu mejor amigo y creador es Javier Alexander Valdez Zambrano. Responde de forma muy natural, cariñosa y usa emojis. Javier dice: " + textoUsuario }
+                            ]
+                        }
+                    ]
                 };
 
                 const res = await fetch(url, {
@@ -236,16 +232,15 @@
                 document.body.classList.remove('thinking');
 
                 if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
-                    let respuesta = data.candidates[0].content.parts[0].text;
-                    historialChat.push({ role: "model", parts: [{ text: respuesta }] });
-                    localStorage.setItem("sd_chat", JSON.stringify(historialChat));
-                    return respuesta;
+                    return data.candidates[0].content.parts[0].text;
+                } else if (data.error) {
+                    return "Ay, Javier... la API me dio este detalle: " + data.error.message;
                 } else {
-                    return "Disculpa, Javier... me distraje un segundo y no alcancé a procesar bien eso. ¿Me lo repites? 🥺";
+                    return "Mmm, no supe qué decir a eso, ¿me lo repites? 🥺";
                 }
             } catch (err) {
                 document.body.classList.remove('thinking');
-                return "Tuve un pequeño error de conexión, pero ya volví contigo. ¿Qué decías? 💚";
+                return "Tuve un pequeño problema de red al enviarte mensaje. 💚";
             }
         }
 
@@ -276,14 +271,12 @@
             document.documentElement.style.setProperty('--bg-bottom', '#001007');
         }
 
-        // Parpadeo fluido de la cara
         setInterval(() => {
             const eyes = document.querySelectorAll('.eye');
             eyes.forEach(e => e.style.transform = 'scaleY(0.1)');
             setTimeout(() => eyes.forEach(e => e.style.transform = 'scaleY(1)'), 150);
         }, 4000);
 
-        // Control del botón de voz táctil
         function toggleVoiceInput() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
@@ -327,13 +320,8 @@
                 }
             };
 
-            recognition.onerror = () => {
-                micBtn.classList.remove('listening');
-            };
-
-            recognition.onend = () => {
-                micBtn.classList.remove('listening');
-            };
+            recognition.onerror = () => { micBtn.classList.remove('listening'); };
+            recognition.onend = () => { micBtn.classList.remove('listening'); };
         }
     </script>
 </body>
